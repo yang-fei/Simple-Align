@@ -33,39 +33,6 @@ class RealESRNetModel(SRModel):
         self.weight = float(opt['weight'])
 
     @torch.no_grad()
-    def _dequeue_and_enqueue(self):
-        # training pair pool
-        # initialize
-        b, c, h, w = self.lq.size()
-        if not hasattr(self, 'queue_lr'):
-            print(self.queue_size, b)
-            assert self.queue_size % b == 0, 'queue size should be divisible by batch size'
-            self.queue_lr = torch.zeros(self.queue_size, c, h, w).cuda()
-            _, c, h, w = self.gt.size()
-            self.queue_gt = torch.zeros(self.queue_size, c, h, w).cuda()
-            self.queue_ptr = 0
-        if self.queue_ptr == self.queue_size:  # full
-            # do dequeue and enqueue
-            # shuffle
-            idx = torch.randperm(self.queue_size)
-            self.queue_lr = self.queue_lr[idx]
-            self.queue_gt = self.queue_gt[idx]
-            # get
-            lq_dequeue = self.queue_lr[0:b, :, :, :].clone()
-            gt_dequeue = self.queue_gt[0:b, :, :, :].clone()
-            # update
-            self.queue_lr[0:b, :, :, :] = self.lq.clone()
-            self.queue_gt[0:b, :, :, :] = self.gt.clone()
-
-            self.lq = lq_dequeue
-            self.gt = gt_dequeue
-        else:
-            # only do enqueue
-            self.queue_lr[self.queue_ptr:self.queue_ptr + b, :, :, :] = self.lq.clone()
-            self.queue_gt[self.queue_ptr:self.queue_ptr + b, :, :, :] = self.gt.clone()
-            self.queue_ptr = self.queue_ptr + b
-
-    @torch.no_grad()
     def feed_data(self, data):
         if self.is_train:
             # training data synthesis
@@ -180,9 +147,6 @@ class RealESRNetModel(SRModel):
             # random crop
             gt_size = self.opt['gt_size']
             self.gt, self.lq = paired_random_crop(self.gt, self.lq, gt_size, self.opt['scale'])
-
-            # training pair pool
-            self._dequeue_and_enqueue()
         else:
             self.lq = data['lq'].to(self.device)
             if 'gt' in data:
