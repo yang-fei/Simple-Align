@@ -49,11 +49,10 @@ class RealESRNetModel(SRModel):
                     self.kernel1 = data['kernel1'].to(self.device)
                     self.kernel2 = data['kernel2'].to(self.device)
                     self.sinc_kernel = data['sinc_kernel'].to(self.device)
-                # else:
-                #     self.kernel1 = data['kernel3'].to(self.device)
-                #     self.kernel2 = data['kernel4'].to(self.device)
-                #     self.sinc_kernel = data['sinc_kernel2'].to(self.device)
-                # print(self.kernel1.shape, self.kernel2.shape, self.sinc_kernel.shape)
+                else:
+                     self.kernel1 = data['kernel3'].to(self.device)
+                     self.kernel2 = data['kernel4'].to(self.device)
+                     self.sinc_kernel = data['sinc_kernel2'].to(self.device)
                 # ----------------------- The first degradation process ----------------------- #
                 # blur
                 out = filter2D(self.gt, self.kernel1)
