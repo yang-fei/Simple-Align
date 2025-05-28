@@ -62,3 +62,14 @@ Many parts of this code is adapted from:
 
 We thank the authors for sharing codes for their great works.
 
+## Modified by Fei Yang
+1. basicsr use the old version of torchvision(<0.13.), currently the torchvision has been >= 0.21. 
+modify: basicsr/data/degradations.py line8:
+old: from torchvision.transforms.functional_tensor import rgb_to_grayscale
+new: 
+try:
+    from torchvision.transforms.functional_tensor import rgb_to_grayscale
+except ImportError:
+    from torchvision.transforms.functional import rgb_to_grayscale
+2. when run test.py, it report an error that "RRDBNet has been registerred". I guess there is somewhere RRDBNet has been registerred, thus I just commit line65 in realesrgan/archs/rrdbnet_arch.py.  
+    
